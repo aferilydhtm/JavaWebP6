@@ -2,24 +2,29 @@ package com.ubl.student_web;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ubl.student_web.domain.Student;
 
-@RestController
+@Controller
 public class StudentController {
+// Codingan 1
     // @GetMapping("/hello")
 	// public String hello(){
 	// 	return "Welcome Student";
@@ -55,20 +60,28 @@ public class StudentController {
 	// 	studentList.addAll(List.of(student1, student2, student3));
 	// 	return studentList;
 	// }
-	
+
+//codingan 2 
 	public static Map<String, Student> studentMap = new HashMap<>();
 
+	// @GetMapping("/students")
+	// public List<Student> getStudents(){
+	// 	return studentMap.values().stream().toList();
+	// }
+
 	@GetMapping("/students")
-	public List<Student> getStudents(){
-		return studentMap.values().stream().toList();
+	public String getStudents(Model model){
+		List<Student> studentsList = studentMap.values().stream().toList();
+		model.addAttribute("students", studentsList);
+		return "index";
 	}
 
-	@PostMapping("/students")
-	public ResponseEntity<String> addStudent(@RequestBody Student student){
-		studentMap.put(student.getNim(), student);
-		Student savedStudent = studentMap.get(student.getNim());
-		return new ResponseEntity<>("Student wit NIM: " + savedStudent.getNim() + " has been created", HttpStatus.OK);
-	}
+	// @PostMapping("/students")
+	// public ResponseEntity<String> addStudent(@RequestBody Student student){
+	// 	studentMap.put(student.getNim(), student);
+	// 	Student savedStudent = studentMap.get(student.getNim());
+	// 	return new ResponseEntity<>("Student wit NIM: " + savedStudent.getNim() + " has been created", HttpStatus.OK);
+	// }
 
 	@GetMapping(value = "/students/{nim}")
 	public ResponseEntity<Student> findStudent(@PathVariable("nim") String nim){
@@ -92,4 +105,18 @@ public class StudentController {
 		studentMap.remove(nim);
 		return new ResponseEntity<Void>(HttpStatus.OK);
 	}
+
+	@GetMapping("/signup")
+	public String showSignUpForm(Student student){
+		return "addStudents";
+	}
+
+	@PostMapping("/students")
+	public String addStudent(Student student, Model model){
+		studentMap.put(student.getNim(), student);
+		List<Student> studentsList = studentMap.values().stream().toList();
+		model.addAttribute("students", studentsList);
+		return "index";
+	}
+
 }
