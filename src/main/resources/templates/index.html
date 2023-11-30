@@ -12,12 +12,13 @@
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="students : ${student}">
+                <tr th:each="student : ${students}">
                     <td th:text="${student.nim}"></td>
                     <td th:text="${student.fullName}"></td>
+                    <td th:text="${#dates.format(student.dateOfBirth, 'dd-MMM-yyyy')}"></td>
                     <td th:text="${student.address}"></td>
-                    <td><a href="#">Edit</a></td>
-                    <td><a href="#">Delete</a></td>
+                    <td><a th:href="@{/edit/{nim}(nim=${student.nim})}">Edit</a></td>
+                    <td><a th:href="@{/students/{nim}/delete (nim=${student.nim})}">Delete</a></td>
                 </tr>
             </tbody>
         </table>
