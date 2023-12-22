@@ -1,57 +1,48 @@
-package com.ubl.student_web;
+package com.ubl.student_web.rest;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
-import javax.validation.Valid;
-
-import org.apache.tomcat.jni.Local;
+import org.hibernate.service.spi.ServiceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.ubl.student_web.domain.Student;
+import com.ubl.student_web.service.StudentService;
 
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
-@Slf4j
+@Slf4j(topic = "student-logger")
+@RequiredArgsConstructor
 public class StudentController {
 
-//codingan 2 
-	public static Map<String, Student> studentMap = new HashMap<>();
+    private final StudentService studentService;
 
-	@GetMapping("/students")
+    @GetMapping("/students")
     public String getStudents(Model model) {
-        model.addAttribute("students", fetchStudents());
+        model.addAttribute("students", studentService.getStudents());
         return "index";
     }
 
     @GetMapping("/signup")
     public String showSignUpForm(Student student) {
-        return "addStudents";
+        return "add-student";
     }
 
     @PostMapping("/students")
     public String addStudent(@Valid Student student, BindingResult bindingResult, Model model) {
-
+        log.debug("nim {}, fullname {}", student.getNim(), student.getFullName());
         String errorDateOfBirth = validateDateOfBirth(student);
 
         log.info("errordateOfBirth {}", errorDateOfBirth);
@@ -63,18 +54,20 @@ public class StudentController {
         log.info("bindingResult {}", bindingResult);
 
         if (bindingResult.hasErrors()) {
-            return "addStudents";
+            return "add-student";
         }
 
         String nim = student.getNim();
-        boolean exists = studentMap.values().stream()
-                .anyMatch(data -> nim.equals(data.getNim()));
+
+        boolean exists = studentService.findStudentByNim(nim).isPresent();
 
         if (exists) {
             throw new IllegalArgumentException("student with nim:" + nim + "is already exist");
         }
-        studentMap.put(nim, student);
-        model.addAttribute("students", fetchStudents());
+
+        studentService.save(student);
+
+        model.addAttribute("students", studentService.getStudents());
         return "index";
     }
 
@@ -100,42 +93,46 @@ public class StudentController {
 
     @GetMapping(value = "/students/{nim}")
     public ResponseEntity<Student> findStudent(@PathVariable("nim") String nim) {
-        final Student student = studentMap.get(nim);
-        return new ResponseEntity<>(student, HttpStatus.OK);
-    }
+        Optional<Student> studentOptional = studentService.findStudentByNim(nim);
+        if (studentOptional.isPresent()) {
+            return new ResponseEntity<>(studentOptional.get(), HttpStatus.OK);
+        } else {
+            return null;
+        }
 
-    private static List<Student> fetchStudents() {
-        return studentMap.values().stream().toList();
     }
 
     @PostMapping(value = "/students/{nim}")
     public String updateStudent(@PathVariable("nim") String nim,
             Student student,
             BindingResult result, Model model) {
-        final Student studentToBeUpdated = studentMap.get(student.getNim());
-        studentToBeUpdated.setAddress(student.getAddress());
-        studentToBeUpdated.setDateOfBirth(student.getDateOfBirth());
-        studentToBeUpdated.setFullName(student.getFullName());
-        studentMap.put(student.getNim(), studentToBeUpdated);
 
-        model.addAttribute("students", fetchStudents());
+        final Optional<Student> optionalStudent = studentService.findStudentByNim(student.getNim());
+        if (optionalStudent.isEmpty()) {
+            throw new ServiceException("student with nim:" + nim + "is not exists");
+        }
+
+        studentService.update(student);
+
+        model.addAttribute("students", studentService.getStudents());
         return "redirect:/students";
     }
 
     @GetMapping("/edit/{nim}")
     public String showUpdateForm(@PathVariable("nim") String nim, Model model) {
-        final Student studentToBeUpdated = studentMap.get(nim);
-        if (studentToBeUpdated == null) {
-            throw new IllegalArgumentException("student with nim:" + nim + "is not found");
+        final Optional<Student> optionalStudent = studentService.findStudentByNim(nim);
+        if (optionalStudent.isEmpty()) {
+            throw new ServiceException("student with nim:" + nim + "is not exists");
         }
+        final Student studentToBeUpdated = optionalStudent.get();
+
         model.addAttribute("student", studentToBeUpdated);
-        return "editStudents";
+        return "update-student";
     }
 
     @GetMapping(value = "/students/{nim}/delete")
     public String deleteStudent(@PathVariable("nim") String nim) {
-        studentMap.remove(nim);
+        studentService.delete(nim);
         return "redirect:/students";
     }
-
 }

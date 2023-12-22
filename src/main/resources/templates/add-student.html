@@ -16,8 +16,8 @@
 
         </tr>
         <tr>
-            <td> <label for="dateofBirth">Date of birth</label></td>
-            <td> <input type="date" th:field="*{dateOfBirth}" id="dateOfBirth"></td>
+            <td> <label for="dateOfBirth">Date of birth</label></td>
+            <td> <input type="date" th:field="*{dateOfBirth}" id="dateOfBirth" placeholder="Date of birth"></td>
             <td th:if="${#fields.hasErrors('dateOfBirth')}" th:errors="*{dateOfBirth}" class="error"></td>
 
         </tr>

@@ -1,13 +1,15 @@
 package com.ubl.student_web.domain;
 
-import java.time.LocalDate;
 import java.util.Date;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Past;
-import javax.validation.constraints.Size;
-import org.hibernate.validator.constraints.NotBlank;
+
 import org.springframework.format.annotation.DateTimeFormat;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.experimental.Accessors;
+
+@Accessors(chain = true)
 public class Student {
 
     private String nim;
@@ -16,9 +18,7 @@ public class Student {
     @Size(min = 3, max = 50)
     private String fullName;
 
-    
     private String address;
-
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @NotNull(message = "Date of Birth is required")
     private Date dateOfBirth;
