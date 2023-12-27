@@ -8,6 +8,7 @@ import com.ubl.student_web.domain.Student;
 public interface StudentService {
 
     List<Student> getStudents();
+
     Optional<Student> findStudentByNim(final String nim);
 
     void save(Student student);

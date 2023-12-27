@@ -8,12 +8,12 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication(exclude = {
 SecurityAutoConfiguration.class })
-@EnableJpaRepositories("com.ubl.studentweb.repository")
+@EnableJpaRepositories("com.ubl.student_web.repository")
 @ComponentScan({
-	"com.ubl.studentweb.repository",
-	"com.ubl.studentweb.service",
-	"com.ubl.studentweb.rest",
-	"com.ubl.studentweb.domain",
+	"com.ubl.student_web.repository",
+	"com.ubl.student_web.service",
+	"com.ubl.student_web.rest",
+	"com.ubl.student_web.domain",
 })
 public class StudentWebApplication {
 
